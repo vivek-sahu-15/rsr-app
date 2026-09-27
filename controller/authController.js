@@ -4,10 +4,6 @@ const generateToken = require('../utils/generateToken');
 
 const SALT_ROUNDS = 10;
 
-// POST /api/auth/signup
-// Creates a row in `users`, then a matching row in `students` or `teachers`
-// using the new user's id — wrapped in a transaction so we never end up
-// with a user that has no profile (or vice versa) if something fails.
 async function signup(req, res) {
     const { email, password, role, ...profile } = req.body;
 
