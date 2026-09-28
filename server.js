@@ -7,7 +7,7 @@ const teacherRoutes = require('./routes/teacherRoutes')
 const timetableRoutes = require('./routes/timetableRoutes')
 const feesRoutes = require('./routes/feesRoutes');
 const noticeRoutes = require('./routes/noticeRoutes');
-const PORT = 5050
+const PORT = process.env.PORT
 
 const app = express()
 
