@@ -3,6 +3,10 @@ const express = require('express')
 const cors = require('cors')
 const authRoutes = require('./routes/authRoutes')
 const studentRoutes = require('./routes/studentRoutes')
+const teacherRoutes = require('./routes/teacherRoutes')
+const timetableRoutes = require('./routes/timetableRoutes')
+const feesRoutes = require('./routes/feesRoutes');
+const noticeRoutes = require('./routes/noticeRoutes');
 const PORT = 5050
 
 const app = express()
@@ -12,6 +16,10 @@ app.use(express.json())
 
 app.use('/api/auth', authRoutes)
 app.use('/api/student', studentRoutes)
+app.use('/api/teacher', teacherRoutes)
+app.use('/api/timetable', timetableRoutes)
+app.use('/api/student/fees', feesRoutes);
+app.use('/api/notices', noticeRoutes);
 
 
 app.get('/api/health', async (req, res) => {
