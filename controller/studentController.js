@@ -3,28 +3,27 @@ const db = require('../config/db')
 async function getProfile(req, res) {
     try {
         const userId = req.user.id;
-        const [rows] = await db.query(`
-            SELECT s.id, s.fullName, s.contactNumber, s.admissionDate, s.dateOFBirth,
+ 
+        const [rows] = await db.query(
+            `SELECT s.id, s.fullName, s.contactNumber, s.admissionDate, s.dateOFBirth,
                     s.gender, s.course, s.semester, s.motherName, s.fatherName,
-                    u.email
+                    s.profilePicture, u.email
              FROM students s
              JOIN users u ON s.user_id = u.id
-             WHERE s.user_id = ?
-            `, [userId])
-
+             WHERE s.user_id = ?`,
+            [userId]
+        );
+ 
         if (rows.length === 0) {
-            return res.status(400).json({ message: "Student Profile not Found" })
+            return res.status(404).json({ message: 'Student profile not found' });
         }
-
-        return res.json({ profile: rows[0] })
-
+ 
+        return res.json({ profile: rows[0] });
+ 
     } catch (error) {
-        console.error('Get profile error', error.message);
+        console.error('Get profile error:', error.message);
         return res.status(500).json({ message: 'Failed to fetch profile', error: error.message });
-
-
     }
-
 }
 
 async function getSyllabus(req, res) {
@@ -121,4 +120,34 @@ async function getAttendance(req, res) {
     }
 }
 
-module.exports = { getProfile, getSyllabus, getAttendance }
+async function updateProfilePicture(req, res) {
+    try {
+        const { url } = req.body;
+ 
+        if (!url || typeof url !== 'string') {
+            return res.status(400).json({ message: 'url is required' });
+        }
+        // Loose sanity check — not a full URL validator, just guards against
+        // someone accidentally sending garbage instead of a link
+        if (!/^https?:\/\//.test(url)) {
+            return res.status(400).json({ message: 'url must be a valid http(s) URL' });
+        }
+ 
+        const [result] = await db.query(
+            'UPDATE students SET profilePicture = ? WHERE user_id = ?',
+            [url, req.user.id]
+        );
+ 
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Student profile not found' });
+        }
+ 
+        return res.json({ message: 'Profile picture updated', profilePicture: url });
+ 
+    } catch (error) {
+        console.error('Update profile picture error:', error.message);
+        return res.status(500).json({ message: 'Failed to update profile picture', error: error.message });
+    }
+}
+
+module.exports = { getProfile, getSyllabus, getAttendance, updateProfilePicture }

@@ -170,4 +170,56 @@ async function getStudents(req, res) {
     }
 }
 
-module.exports = { markAttendance, updateTimetableSlot, getStudents };
+
+async function getProfile(req, res) {
+    try {
+        const [rows] = await db.query(
+            `SELECT t.id, t.fullName, t.contactNumber, t.subject, t.profilePicture, u.email
+             FROM teachers t
+             JOIN users u ON t.user_id = u.id
+             WHERE t.user_id = ?`,
+            [req.user.id]
+        );
+ 
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Teacher profile not found' });
+        }
+ 
+        return res.json({ profile: rows[0] });
+ 
+    } catch (error) {
+        console.error('Get teacher profile error:', error.message);
+        return res.status(500).json({ message: 'Failed to fetch profile', error: error.message });
+    }
+}
+
+
+async function updateProfilePicture(req, res) {
+    try {
+        const { url } = req.body;
+ 
+        if (!url || typeof url !== 'string') {
+            return res.status(400).json({ message: 'url is required' });
+        }
+        if (!/^https?:\/\//.test(url)) {
+            return res.status(400).json({ message: 'url must be a valid http(s) URL' });
+        }
+ 
+        const [result] = await db.query(
+            'UPDATE teachers SET profilePicture = ? WHERE user_id = ?',
+            [url, req.user.id]
+        );
+ 
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Teacher profile not found' });
+        }
+ 
+        return res.json({ message: 'Profile picture updated', profilePicture: url });
+ 
+    } catch (error) {
+        console.error('Update profile picture error:', error.message);
+        return res.status(500).json({ message: 'Failed to update profile picture', error: error.message });
+    }
+}
+
+module.exports = { markAttendance, updateTimetableSlot, getStudents, getProfile, updateProfilePicture };
